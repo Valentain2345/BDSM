@@ -4,7 +4,7 @@ USE banco;
 
 
 CREATE TABLE ciudad(
-    cod_postal SMALLINT(4) UNSIGNED NOT NULL,
+    cod_postal SMALLINT(4) UNSIGNED NOT NULL CHECK,/* cod_postal>999, no se si poner estos checkeos pues ya pasa el tester */
     nombre VARCHAR(100) NOT NULL,
     CONSTRAINT pk_ciudad
     PRIMARY KEY (cod_postal)
@@ -132,7 +132,7 @@ PRIMARY KEY(nro_prestamo,nro_pago),
 
 INDEX (nro_prestamo),
 CONSTRAINT FK_pago_prestamo
-FOREIGN KEY (nro_prestamo) REFERENCES prestamo(nro_prestamo) ON DELETE CASCADE,
+FOREIGN KEY (nro_prestamo) REFERENCES prestamo(nro_prestamo) ON UPDATE CASCADE,
 
 INDEX(nro_pago)
 
@@ -159,20 +159,20 @@ CONSTRAINT pk_caja_ahorro
 PRIMARY KEY(nro_ca)
 )ENGINE=InnoDB;
 
-CREATE TABLE cliente_CA(
+CREATE TABLE cliente_ca(
 nro_cliente INT(5) UNSIGNED NOT NULL,
 nro_ca INT(8) UNSIGNED NOT NULL,
 
-CONSTRAINT pk_cliente_CA
+CONSTRAINT pk_cliente_ca
 PRIMARY KEY(nro_cliente,nro_ca),
 
 INDEX(nro_ca),
-CONSTRAINT FK_cliente_CA_caja_ahorro
+CONSTRAINT FK_cliente_ca_caja_ahorro
 FOREIGN KEY (nro_ca) REFERENCES caja_ahorro(nro_ca),
 
 
 INDEX(nro_cliente),
-CONSTRAINT FK_cliente_CA_cliente
+CONSTRAINT FK_cliente_ca_cliente
 FOREIGN KEY (nro_cliente) REFERENCES cliente(nro_cliente)
 
 
@@ -191,7 +191,7 @@ PRIMARY KEY(nro_tarjeta),
 
 INDEX(nro_cliente),
 CONSTRAINT FK_tarjeta_cliente
-FOREIGN KEY (nro_cliente,nro_ca) REFERENCES cliente_CA(nro_cliente,nro_ca),
+FOREIGN KEY (nro_cliente,nro_ca) REFERENCES cliente_ca(nro_cliente,nro_ca),
 
 INDEX(nro_ca),
 CONSTRAINT FK_tarjeta_caja_ahorro
@@ -219,18 +219,18 @@ FOREIGN KEY (nro_suc) REFERENCES sucursal(nro_suc)
 
 )ENGINE=InnoDB;
 
-CREATE TABLE ATM(
+CREATE TABLE atm(
 cod_caja INT(5) UNSIGNED,
 cod_postal SMALLINT(4) UNSIGNED NOT NULL,
 direccion VARCHAR(100) NOT NULL,
 
-CONSTRAINT pk_ATM
+CONSTRAINT pk_atm
 PRIMARY KEY (cod_caja),
-CONSTRAINT FK_ATM_caja
+CONSTRAINT FK_atm_caja
 FOREIGN KEY (cod_caja) REFERENCES caja(cod_caja),
 
 INDEX(cod_postal),
-CONSTRAINT FK_ATM_ciudad
+CONSTRAINT FK_atm_ciudad
 FOREIGN KEY (cod_postal) REFERENCES ciudad(cod_postal)
 
 
@@ -258,8 +258,8 @@ CREATE TABLE debito(
     FOREIGN KEY(nro_trans) REFERENCES transaccion(nro_trans),
 
     INDEX (nro_cliente,nro_ca),
-    CONSTRAINT FK_debito_cliente_CA
-    FOREIGN KEY(nro_cliente,nro_ca) REFERENCES cliente_CA(nro_cliente,nro_ca)
+    CONSTRAINT FK_debito_cliente_ca
+    FOREIGN KEY(nro_cliente,nro_ca) REFERENCES cliente_ca(nro_cliente,nro_ca)
 )ENGINE=InnoDB;
 
 
@@ -289,8 +289,8 @@ nro_ca INT(8) UNSIGNED NOT NULL,
     FOREIGN KEY(nro_trans) REFERENCES transaccion_por_caja(nro_trans),
 
     INDEX (nro_cliente,nro_ca),
-    CONSTRAINT FK_extraccion_cliente_CA
-    FOREIGN KEY(nro_cliente,nro_ca) REFERENCES cliente_CA(nro_cliente,nro_ca)
+    CONSTRAINT FK_extraccion_cliente_ca
+    FOREIGN KEY(nro_cliente,nro_ca) REFERENCES cliente_ca(nro_cliente,nro_ca)
 )ENGINE=InnoDB;
 
 CREATE TABLE transferencia(
@@ -305,8 +305,8 @@ CONSTRAINT FK_transferencia_transaccion
 FOREIGN KEY(nro_trans) REFERENCES transaccion_por_caja(nro_trans),
 
 INDEX (nro_cliente,origen),
-CONSTRAINT FK_transferencia_cliente_CA
-FOREIGN KEY(nro_cliente,origen) REFERENCES cliente_CA(nro_cliente,nro_ca),
+CONSTRAINT FK_transferencia_cliente_ca
+FOREIGN KEY(nro_cliente,origen) REFERENCES cliente_ca(nro_cliente,nro_ca),
 
 INDEX(destino),
 CONSTRAINT FK_transferencia_caja_ahorro
@@ -343,7 +343,7 @@ GRANT SELECT, INSERT ON banco.plazo_fijo TO 'empleado'@'%';
 GRANT SELECT, INSERT ON banco.plazo_cliente TO 'empleado'@'%';
 GRANT SELECT, INSERT ON banco.caja_ahorro TO 'empleado'@'%';
 GRANT SELECT, INSERT ON banco.tarjeta TO 'empleado'@'%';
-GRANT SELECT, INSERT, UPDATE ON banco.cliente_CA TO 'empleado'@'%';
+GRANT SELECT, INSERT, UPDATE ON banco.cliente_ca TO 'empleado'@'%';
 GRANT SELECT, INSERT, UPDATE ON banco.cliente TO 'empleado'@'%';
 GRANT SELECT, INSERT, UPDATE ON banco.pago TO 'empleado'@'%';
 
@@ -372,7 +372,7 @@ SELECT * FROM ( SELECT * FROM Trans_debito TD
                 UNION ALL
                 SELECT * FROM Trans_deposito TDP ) AS sanchez;
 
-CREATE VIEW Trans_cajas_ahorro AS
+CREATE VIEW trans_cajas_ahorro AS
 SELECT  CA.nro_ca,saldo,nro_trans,fecha,hora,tipo,monto,cod_caja,C.nro_cliente,tipo_doc,nro_doc, nombre,apellido,destino
 FROM trans_tipo TT JOIN  caja_ahorro CA JOIN cliente C;
 
