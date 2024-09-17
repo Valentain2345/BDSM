@@ -4,7 +4,7 @@ USE banco;
 
 
 CREATE TABLE ciudad(
-    cod_postal SMALLINT(4) UNSIGNED NOT NULL CHECK,/* cod_postal>999, no se si poner estos checkeos pues ya pasa el tester */
+    cod_postal SMALLINT(4) UNSIGNED NOT NULL ,
     nombre VARCHAR(100) NOT NULL,
     CONSTRAINT pk_ciudad
     PRIMARY KEY (cod_postal)
