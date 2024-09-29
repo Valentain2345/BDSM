@@ -364,7 +364,7 @@ FROM transferencia TR NATURAL JOIN transaccion T NATURAL JOIN transaccion_por_ca
 CREATE VIEW Trans_deposito AS
 SELECT T.nro_trans,fecha,hora,monto, "deposito" as tipo ,NULL as descripcion, NULL as nro_cliente,nro_ca, NULL as destino, cod_caja, NULL as nombre,NULL as apellido,NULL as tipo_doc,NULL as nro_doc 
 
-FROM deposito D NATURAL JOIN transaccion T NATURAL JOIN transaccion_por_caja TP NATURAL JOIN cliente C;
+FROM deposito D NATURAL JOIN transaccion T NATURAL JOIN transaccion_por_caja TP;
 
 CREATE VIEW trans_tipo AS
 SELECT * FROM ( SELECT * FROM Trans_debito TD
@@ -376,8 +376,8 @@ SELECT * FROM ( SELECT * FROM Trans_debito TD
                 SELECT * FROM Trans_deposito TDP ) AS sanchez;
 
 CREATE VIEW trans_cajas_ahorro AS
-SELECT  CA.nro_ca,saldo,nro_trans,fecha,hora,tipo,monto,cod_caja,C.nro_cliente,tipo_doc,nro_doc, nombre,apellido,destino
-FROM trans_tipo TT NATURAL JOIN  caja_ahorro CA NATURAL JOIN cliente C;
+SELECT  CA.nro_ca,saldo,nro_trans,fecha,hora,tipo,monto,cod_caja,nro_cliente,tipo_doc,nro_doc, nombre,apellido,destino
+FROM trans_tipo TT NATURAL JOIN  caja_ahorro CA;
 
 CREATE USER 'atm'@'%' IDENTIFIED BY 'atm';
 GRANT SELECT ON trans_cajas_ahorro TO 'atm'@'%';
