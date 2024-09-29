@@ -333,7 +333,7 @@ CREATE TABLE deposito(
 CREATE USER 'admin'@'localhost' IDENTIFIED BY 'admin';
 GRANT ALL PRIVILEGES ON banco.* TO 'admin'@'localhost' WITH GRANT OPTION;
 
-CREATE USER 'empleado'@ IDENTIFIED BY 'empleado';
+CREATE USER 'empleado'@'%' IDENTIFIED BY 'empleado';
 GRANT SELECT ON banco.empleado TO 'empleado'@'%';
 GRANT SELECT ON banco.sucursal TO 'empleado'@'%';
 GRANT SELECT ON banco.tasa_plazo_fijo TO 'empleado'@'%';
@@ -348,20 +348,23 @@ GRANT SELECT, INSERT, UPDATE ON banco.cliente TO 'empleado'@'%';
 GRANT SELECT, INSERT, UPDATE ON banco.pago TO 'empleado'@'%';
 
 CREATE VIEW Trans_debito AS
-SELECT T.nro_trans, fecha,hora,monto, 'debito' as tipo ,descripcion,nro_cliente,nro_ca, NULL as origen , NULL as destino, NULL as cod_caja
-FROM transaccion T JOIN debito D ;
+SELECT T.nro_trans, fecha,hora,monto, 'debito' as tipo ,descripcion,C.nro_cliente,nro_ca, NULL as destino, NULL as cod_caja, nombre,apellido,tipo_doc,nro_doc 
+FROM transaccion T NATURAL JOIN debito D  NATURAL JOIN cliente C;
 
 CREATE VIEW Trans_extraccion AS
-SELECT T.nro_trans,fecha,hora,monto, "extraccion" as tipo ,NULL as descripcion,nro_cliente,nro_ca ,NULL as origen , NULL as destino, cod_caja
-FROM extraccion E JOIN transaccion T JOIN transaccion_por_caja TP;
+SELECT T.nro_trans,fecha,hora,monto, "extraccion" as tipo ,NULL as descripcion,C.nro_cliente,nro_ca , NULL as destino, cod_caja, nombre,apellido,tipo_doc,nro_doc 
+
+FROM extraccion E NATURAL JOIN transaccion T NATURAL JOIN transaccion_por_caja TP NATURAL JOIN cliente C;
 
 CREATE VIEW Trans_transferencia AS
-SELECT T.nro_trans,fecha,hora,monto, "transferencia" as tipo ,NULL as descripcion,nro_cliente,NULL as nro_ca, origen , destino, cod_caja
-FROM transferencia TR JOIN transaccion T JOIN transaccion_por_caja TP;
+SELECT T.nro_trans,fecha,hora,monto, "transferencia" as tipo ,NULL as descripcion,C.nro_cliente,origen as nro_ca , destino, cod_caja, nombre,apellido,tipo_doc,nro_doc 
+
+FROM transferencia TR NATURAL JOIN transaccion T NATURAL JOIN transaccion_por_caja TP NATURAL JOIN cliente C; 
 
 CREATE VIEW Trans_deposito AS
-SELECT T.nro_trans,fecha,hora,monto, "deposito" as tipo ,NULL as descripcion, NULL as nro_cliente,nro_ca, NULL as origen , NULL as destino, cod_caja
-FROM deposito D JOIN transaccion T JOIN transaccion_por_caja TP;
+SELECT T.nro_trans,fecha,hora,monto, "deposito" as tipo ,NULL as descripcion, NULL as nro_cliente,nro_ca, NULL as destino, cod_caja, NULL as nombre,NULL as apellido,NULL as tipo_doc,NULL as nro_doc 
+
+FROM deposito D NATURAL JOIN transaccion T NATURAL JOIN transaccion_por_caja TP NATURAL JOIN cliente C;
 
 CREATE VIEW trans_tipo AS
 SELECT * FROM ( SELECT * FROM Trans_debito TD
@@ -374,12 +377,12 @@ SELECT * FROM ( SELECT * FROM Trans_debito TD
 
 CREATE VIEW trans_cajas_ahorro AS
 SELECT  CA.nro_ca,saldo,nro_trans,fecha,hora,tipo,monto,cod_caja,C.nro_cliente,tipo_doc,nro_doc, nombre,apellido,destino
-FROM trans_tipo TT JOIN  caja_ahorro CA JOIN cliente C;
+FROM trans_tipo TT NATURAL JOIN  caja_ahorro CA NATURAL JOIN cliente C;
 
-CREATE USER 'atm'@ IDENTIFIED BY 'atm';
-GRANT SELECT ON trans_cajas_ahorro TO 'atm'@;
-GRANT SELECT, UPDATE (pin) ON tarjeta TO 'atm'@;
-GRANT SELECT (nro_tarjeta) ON tarjeta TO 'atm'@;
+CREATE USER 'atm'@'%' IDENTIFIED BY 'atm';
+GRANT SELECT ON trans_cajas_ahorro TO 'atm'@'%';
+GRANT SELECT, UPDATE (pin) ON tarjeta TO 'atm'@'%';
+GRANT SELECT (nro_tarjeta) ON tarjeta TO 'atm'@'%';
 
 drop user if exists ''@localhost;
 
